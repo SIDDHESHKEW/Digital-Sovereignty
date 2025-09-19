@@ -1,1 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Sovereignty - Data Ownership Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">🔐 Digital Sovereignty</h1>
+                <nav class="nav">
+                    <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+                    <button class="nav-btn" onclick="showSection('register')">Register Data</button>
+                    <button class="nav-btn" onclick="showSection('marketplace')">Marketplace</button>
+                    <button class="nav-btn" onclick="showSection('requests')">Requests</button>
+                </nav>
+                <div class="wallet-info">
+                    <span id="userBalance">0 ETH</span>
+                    <button id="connectWallet" class="connect-btn">Connect Wallet</button>
+                </div>
+            </div>
+        </header>
 
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3>My Data Assets</h3>
+                    <div class="stat-number" id="totalAssets">0</div>
+                    <p>Registered datasets</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Earnings</h3>
+                    <div class="stat-number" id="totalEarnings">0 ETH</div>
+                    <p>From data access</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Requests</h3>
+                    <div class="stat-number" id="pendingRequests">0</div>
+                    <p>Awaiting approval</p>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3>My Data Assets</h3>
+                <div id="userDataAssets" class="data-list">
+                    <!-- User data assets will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Register Data Section -->
+        <section id="register" class="section">
+            <div class="form-container">
+                <h2>Register New Data Asset</h2>
+                <form id="registerForm" class="data-form">
+                    <div class="form-group">
+                        <label for="dataId">Data ID:</label>
+                        <input type="text" id="dataId" placeholder="unique-data-identifier" required>
+                        <small>Unique identifier for your data asset</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dataHash">IPFS Hash:</label>
+                        <input type="text" id="dataHash" placeholder="QmXxXxXxXxXx..." required>
+                        <small>IPFS hash of your encrypted data</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Category:</label>
+                        <select id="category" required>
+                            <option value="">Select category</option>
+                            <option value="personal">Personal</option>
+                            <option value="medical">Medical</option>
+                            <option value="financial">Financial</option>
+                            <option value="educational">Educational</option>
+                            <option value="professional">Professional</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="price">Access Price (ETH):</label>
+                        <input type="number" id="price" step="0.001" min="0" placeholder="0.01" required>
+                        <small>Price others must pay to access this data</small>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="isPublic">
+                        <label for="isPublic">Make publicly accessible (automatic approval)</label>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Register Data Asset</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Marketplace Section -->
+        <section id="marketplace" class="section">
+            <div class="marketplace-container">
+                <h2>Data Marketplace</h2>
+                <div class="marketplace-controls">
+                    <input type="text" id="ownerAddress" placeholder="Data owner address" class="search-input">
+                    <button onclick="searchUserData()" class="search-btn">Search</button>
+                </div>
+                
+                <div id="marketplaceResults" class="data-list">
+                    <!-- Search results will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Requests Section -->
+        <section id="requests" class="section">
+            <div class="requests-container">
+                <h2>Access Requests</h2>
+                <div class="requests-tabs">
+                    <button class="tab-btn active" onclick="showRequestTab('incoming')">Incoming Requests</button>
+                    <button class="tab-btn" onclick="showRequestTab('outgoing')">My Requests</button>
+                </div>
+                
+                <div id="incomingRequests" class="request-tab active">
+                    <div id="incomingRequestsList" class="requests-list">
+                        <!-- Incoming requests will be populated here -->
+                    </div>
+                </div>
+                
+                <div id="outgoingRequests" class="request-tab">
+                    <div id="outgoingRequestsList" class="requests-list">
+                        <!-- Outgoing requests will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Request Access Modal -->
+        <div id="requestModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Request Data Access</h3>
+                <form id="requestForm">
+                    <input type="hidden" id="requestOwner">
+                    <input type="hidden" id="requestDataId">
+                    
+                    <div class="form-group">
+                        <label>Data ID:</label>
+                        <span id="requestDataIdDisplay"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Required Payment:</label>
+                        <span id="requestPrice"></span> ETH
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="purpose">Purpose of Access:</label>
+                        <textarea id="purpose" placeholder="Explain why you need access to this data" required></textarea>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="submit" class="submit-btn">Send Request</button>
+                        <button type="button" class="cancel-btn" onclick="closeRequestModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="status-message"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
